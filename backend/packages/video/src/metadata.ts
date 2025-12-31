@@ -1,11 +1,5 @@
-import { existsSync } from "node:fs"
-import ffmpegStatic from "ffmpeg-static"
 import ffmpeg from "fluent-ffmpeg"
-
-// Use ffmpeg-static if available, otherwise fall back to system ffmpeg
-if (typeof ffmpegStatic === "string" && existsSync(ffmpegStatic)) {
-  ffmpeg.setFfmpegPath(ffmpegStatic)
-}
+import { initializeFfmpeg } from "./ffmpeg-path.js"
 
 export interface VideoMetadata {
   duration: number
@@ -25,6 +19,7 @@ export class VideoValidationError extends Error {
 const MAX_DURATION_SECONDS = 60
 
 export async function extractMetadata(filePath: string): Promise<VideoMetadata> {
+  await initializeFfmpeg()
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(filePath, (err, data) => {
       if (err) {
