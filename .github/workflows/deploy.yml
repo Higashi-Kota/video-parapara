@@ -132,10 +132,59 @@ jobs:
           build-args: |
             VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
 
+  deploy-backend-api:
+    name: Deploy Backend API to Render
+    runs-on: ubuntu-latest
+    needs: build-backend-api
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            curl -s "$DEPLOY_HOOK"
+            echo "Deploy triggered"
+          else
+            echo "RENDER_BACKEND_API_DEPLOY_HOOK not set, skipping"
+          fi
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_API_DEPLOY_HOOK }}
+
+  deploy-backend-worker:
+    name: Deploy Backend Worker to Render
+    runs-on: ubuntu-latest
+    needs: build-backend-worker
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            curl -s "$DEPLOY_HOOK"
+            echo "Deploy triggered"
+          else
+            echo "RENDER_BACKEND_WORKER_DEPLOY_HOOK not set, skipping"
+          fi
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_WORKER_DEPLOY_HOOK }}
+
+  deploy-frontend:
+    name: Deploy Frontend to Render
+    runs-on: ubuntu-latest
+    needs: build-frontend
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            curl -s "$DEPLOY_HOOK"
+            echo "Deploy triggered"
+          else
+            echo "RENDER_FRONTEND_DEPLOY_HOOK not set, skipping"
+          fi
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
+
   summary:
     name: Deployment Summary
     runs-on: ubuntu-latest
-    needs: [build-backend-api, build-backend-worker, build-frontend]
+    needs: [deploy-backend-api, deploy-backend-worker, deploy-frontend]
+    if: always()
     steps:
       - name: Summary
         run: |
