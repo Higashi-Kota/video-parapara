@@ -1,16 +1,10 @@
 import { randomUUID } from "node:crypto"
-import { existsSync } from "node:fs"
 import { mkdir, readdir, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import ffmpegStatic from "ffmpeg-static"
 import ffmpeg from "fluent-ffmpeg"
 import sharp from "sharp"
-
-// Use ffmpeg-static if available, otherwise fall back to system ffmpeg
-if (typeof ffmpegStatic === "string" && existsSync(ffmpegStatic)) {
-  ffmpeg.setFfmpegPath(ffmpegStatic)
-}
+import { initializeFfmpeg } from "./ffmpeg-path.js"
 
 export interface ExtractionOptions {
   interval: number
@@ -48,6 +42,7 @@ export async function extractFrames(
   options: Partial<ExtractionOptions> = {},
   onProgress?: ProgressCallback,
 ): Promise<ExtractedFrame[]> {
+  await initializeFfmpeg()
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const tempDir = join(tmpdir(), `frames-${randomUUID()}`)
   await mkdir(tempDir, { recursive: true })

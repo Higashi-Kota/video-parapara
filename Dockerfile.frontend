@@ -39,7 +39,8 @@ COPY specs ./specs
 # Generate API client
 RUN pnpm generate:spec && pnpm generate:api
 
-# Build UI package first (web-app depends on it)
+# Build frontend packages (web-app depends on them)
+RUN pnpm --filter "@video-frame-extractor/api-client" build
 RUN pnpm --filter "@video-frame-extractor/ui" build
 
 # Build web app for production
