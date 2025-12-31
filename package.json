@@ -1,0 +1,63 @@
+{
+  "name": "video-frame-extractor-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.13.1",
+  "scripts": {
+    "clean:build": "find backend frontend -type d -name dist -exec rm -rf {} + 2>/dev/null || true",
+    "clean:modules": "find backend frontend -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true",
+    "clean:all": "pnpm clean:build && rm -rf node_modules && pnpm clean:modules",
+
+    "generate:spec": "pnpm --filter @video-frame-extractor/specs compile",
+    "generate:api": "pnpm --filter @video-frame-extractor/api-client generate",
+    "generate:backend": "pnpm --filter @video-frame-extractor-backend/generated generate",
+    "generate": "pnpm generate:spec && pnpm generate:api && pnpm generate:backend && pnpm lint:fix",
+
+    "build:prepare:backend": "pnpm generate && pnpm --filter './backend/packages/**' build",
+    "build:prepare:frontend": "pnpm generate && pnpm --filter './frontend/packages/**' build",
+    "build:prepare": "pnpm generate && pnpm --filter './backend/packages/**' build && pnpm --filter './frontend/packages/**' build",
+
+    "build:backend": "pnpm --filter './backend/**' build",
+    "build:frontend": "pnpm --filter './frontend/**' build",
+    "build": "pnpm build:backend && pnpm build:frontend",
+
+    "dev:backend:api": "pnpm --filter @video-frame-extractor-backend/server dev",
+    "dev:backend:worker": "pnpm --filter @video-frame-extractor-backend/worker dev",
+    "dev:frontend": "pnpm --filter @video-frame-extractor/web-app dev",
+
+    "serve:backend:api": "pnpm --filter @video-frame-extractor-backend/server start",
+    "serve:backend:worker": "pnpm --filter @video-frame-extractor-backend/worker start",
+    "serve:frontend": "pnpm --filter @video-frame-extractor/web-app preview",
+
+    "test": "pnpm --filter @video-frame-extractor/web-app test",
+    "test:coverage": "pnpm --filter @video-frame-extractor/web-app test:coverage",
+    "test:backend": "pnpm --filter '@video-frame-extractor-backend/*' test",
+
+    "storybook": "pnpm --filter @video-frame-extractor/web-app storybook",
+    "e2e": "pnpm --filter @video-frame-extractor/web-app e2e",
+    "e2e:headed": "pnpm --filter @video-frame-extractor/web-app e2e:headed",
+    "e2e:debug": "pnpm --filter @video-frame-extractor/web-app e2e:debug",
+    "e2e:report": "pnpm --filter @video-frame-extractor/web-app e2e:report",
+
+    "typecheck": "pnpm -r typecheck",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --fix --unsafe",
+    "format": "biome format . --write",
+
+    "db:generate": "pnpm --filter @video-frame-extractor-backend/database db:generate",
+    "db:migrate": "pnpm --filter @video-frame-extractor-backend/database db:migrate",
+    "db:push": "pnpm --filter @video-frame-extractor-backend/database db:push",
+    "db:studio": "pnpm --filter @video-frame-extractor-backend/database db:studio",
+
+    "package:check": "taze",
+    "package:update": "taze -w --install"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.8",
+    "@internal/shared-config": "workspace:*",
+    "@types/node": "^24.10.1",
+    "taze": "^19.9.2",
+    "typescript": "^5.9.3"
+  }
+}

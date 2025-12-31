@@ -1,0 +1,130 @@
+# ==============================================
+# Dockerfile.worker.backend - Worker Only
+# ==============================================
+
+# Build stage
+FROM node:24.4.0-alpine AS builder-worker
+
+# Install pnpm and build dependencies
+ENV PNPM_VERSION=10.13.1
+RUN apk add --no-cache python3 make g++ && \
+    npm install -g pnpm@${PNPM_VERSION}
+
+WORKDIR /app
+
+# Copy package files for better caching
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY shared-config/package.json ./shared-config/
+
+# Copy backend package.json files
+COPY backend/packages/api/package.json ./backend/packages/api/
+COPY backend/packages/config/package.json ./backend/packages/config/
+COPY backend/packages/generated/package.json ./backend/packages/generated/
+COPY backend/packages/utility/package.json ./backend/packages/utility/
+COPY backend/packages/database/package.json ./backend/packages/database/
+COPY backend/packages/storage/package.json ./backend/packages/storage/
+COPY backend/packages/video/package.json ./backend/packages/video/
+COPY backend/packages/queue/package.json ./backend/packages/queue/
+
+# Copy backend apps package.json files
+COPY backend/apps/worker/package.json ./backend/apps/worker/
+
+# Copy specs package.json
+COPY specs/package.json ./specs/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY shared-config ./shared-config
+COPY backend ./backend
+COPY specs ./specs
+COPY biome.json ./
+
+# Build all backend packages and worker app
+RUN pnpm --filter "./backend/packages/**" build && \
+    pnpm --filter "@video-frame-extractor-backend/worker" build
+
+# ==============================================
+# Development stage (Worker)
+# ==============================================
+FROM node:24.4.0-alpine AS development-worker
+
+ENV PNPM_VERSION=10.13.1
+# FFmpeg required for frame extraction
+RUN apk add --no-cache bash wget ffmpeg && \
+    npm install -g pnpm@${PNPM_VERSION}
+
+RUN adduser -D -s /bin/sh appuser
+
+WORKDIR /app
+
+COPY --chown=appuser:appuser package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY --chown=appuser:appuser shared-config ./shared-config
+COPY --chown=appuser:appuser backend ./backend
+COPY --chown=appuser:appuser specs ./specs
+COPY --chown=appuser:appuser biome.json ./
+
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter "./backend/packages/**" build
+
+CMD ["pnpm", "dev:backend:worker"]
+
+# ==============================================
+# Production stage (Worker)
+# ==============================================
+FROM node:24.4.0-alpine AS production-worker
+
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+ENV PNPM_VERSION=10.13.1
+
+# FFmpeg REQUIRED for frame extraction
+RUN apk add --no-cache bash wget ffmpeg && \
+    npm install -g pnpm@${PNPM_VERSION}
+
+RUN adduser -D -s /bin/sh appuser
+
+WORKDIR /app
+
+# Copy package files
+COPY --chown=appuser:appuser package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY --chown=appuser:appuser shared-config/package.json ./shared-config/
+
+# Copy backend package.json files
+COPY --chown=appuser:appuser backend/packages/api/package.json ./backend/packages/api/
+COPY --chown=appuser:appuser backend/packages/config/package.json ./backend/packages/config/
+COPY --chown=appuser:appuser backend/packages/generated/package.json ./backend/packages/generated/
+COPY --chown=appuser:appuser backend/packages/utility/package.json ./backend/packages/utility/
+COPY --chown=appuser:appuser backend/packages/database/package.json ./backend/packages/database/
+COPY --chown=appuser:appuser backend/packages/storage/package.json ./backend/packages/storage/
+COPY --chown=appuser:appuser backend/packages/video/package.json ./backend/packages/video/
+COPY --chown=appuser:appuser backend/packages/queue/package.json ./backend/packages/queue/
+
+# Copy backend apps package.json files
+COPY --chown=appuser:appuser backend/apps/worker/package.json ./backend/apps/worker/
+
+# Copy specs package.json
+COPY --chown=appuser:appuser specs/package.json ./specs/
+
+# Install production dependencies
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
+
+# Copy built artifacts from builder
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/packages/api/dist ./backend/packages/api/dist/
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/packages/config/dist ./backend/packages/config/dist/
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/packages/generated/dist ./backend/packages/generated/dist/
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/packages/utility/dist ./backend/packages/utility/dist/
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/packages/database/dist ./backend/packages/database/dist/
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/packages/storage/dist ./backend/packages/storage/dist/
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/packages/video/dist ./backend/packages/video/dist/
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/packages/queue/dist ./backend/packages/queue/dist/
+COPY --from=builder-worker --chown=appuser:appuser /app/backend/apps/worker/dist ./backend/apps/worker/dist/
+
+USER appuser
+
+# Worker has no HTTP endpoint, use process check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD pgrep -f "node.*worker" || exit 1
+
+CMD ["node", "backend/apps/worker/dist/index.js"]

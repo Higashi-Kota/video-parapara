@@ -1,0 +1,454 @@
+openapi: 3.0.0
+info:
+  title: Video Frame Extractor API
+  version: 0.0.0
+tags: []
+paths:
+  /api/extract:
+    post:
+      operationId: Extract_start
+      description: Start frame extraction job
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractionJob'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                videoId:
+                  type: string
+                options:
+                  $ref: '#/components/schemas/ExtractionOptions'
+              required:
+                - videoId
+  /api/extract/{jobId}:
+    get:
+      operationId: Extract_getStatus
+      description: Get extraction job status
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractionJob'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    delete:
+      operationId: Extract_cancel
+      description: Cancel extraction job
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /api/frames:
+    get:
+      operationId: Frames_list
+      description: Get frames for a video
+      parameters:
+        - name: videoId
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FrameInfo'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /api/frames/download:
+    get:
+      operationId: Frames_download
+      description: Download all frames as ZIP
+      parameters:
+        - name: videoId
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /api/videos:
+    post:
+      operationId: Videos_upload
+      description: Upload a video file
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoUploadResponse'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoUploadRequest'
+    get:
+      operationId: Videos_list
+      description: List all videos
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VideoInfo'
+  /api/videos/{videoId}:
+    get:
+      operationId: Videos_get
+      description: Get video information
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoInfo'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    delete:
+      operationId: Videos_delete
+      description: Delete a video and its extracted frames
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /health:
+    get:
+      operationId: Health_check
+      description: Health check endpoint
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                required:
+                  - status
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    ExtractionJob:
+      type: object
+      required:
+        - id
+        - videoId
+        - status
+        - options
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Job ID
+        videoId:
+          type: string
+          description: Video ID
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ExtractionStatus'
+          description: Job status
+        options:
+          allOf:
+            - $ref: '#/components/schemas/ExtractionOptions'
+          description: Extraction options used
+        totalFrames:
+          type: integer
+          format: int32
+          description: Total frames to extract
+        extractedFrames:
+          type: integer
+          format: int32
+          description: Frames extracted so far
+        frames:
+          type: array
+          items:
+            $ref: '#/components/schemas/FrameInfo'
+          description: Extracted frames (available when completed)
+        error:
+          type: string
+          description: Error message (if failed)
+        createdAt:
+          type: string
+          format: date-time
+          description: Job creation timestamp
+        completedAt:
+          type: string
+          format: date-time
+          description: Job completion timestamp
+      description: Extraction job information
+    ExtractionOptions:
+      type: object
+      properties:
+        interval:
+          type: number
+          format: double
+          description: 'Interval between frames in seconds (default: 1.0)'
+          default: 1
+        format:
+          allOf:
+            - $ref: '#/components/schemas/ImageFormat'
+          description: Output image format
+          default: png
+        quality:
+          type: integer
+          format: int32
+          description: Image quality (1-100, for jpeg)
+          default: 90
+        maxWidth:
+          type: integer
+          format: int32
+          description: Maximum width (maintains aspect ratio)
+        maxHeight:
+          type: integer
+          format: int32
+          description: Maximum height (maintains aspect ratio)
+      description: Frame extraction options
+    ExtractionStatus:
+      type: string
+      enum:
+        - pending
+        - processing
+        - completed
+        - failed
+      description: Extraction job status
+    FrameInfo:
+      type: object
+      required:
+        - frameNumber
+        - timestamp
+        - url
+        - width
+        - height
+        - format
+      properties:
+        frameNumber:
+          type: integer
+          format: int32
+          description: Frame number (0-indexed)
+        timestamp:
+          type: number
+          format: double
+          description: Timestamp in seconds
+        url:
+          type: string
+          description: Frame image URL
+        width:
+          type: integer
+          format: int32
+          description: Image width in pixels
+        height:
+          type: integer
+          format: int32
+          description: Image height in pixels
+        format:
+          type: string
+          description: Image format (e.g., 'png', 'jpeg')
+      description: Extracted frame information
+    ImageFormat:
+      type: string
+      enum:
+        - png
+        - jpeg
+        - webp
+      description: Supported image formats
+    NotFoundError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    VideoInfo:
+      type: object
+      required:
+        - id
+        - filename
+        - mimeType
+        - size
+        - duration
+        - width
+        - height
+        - frameRate
+        - uploadedAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the video
+        filename:
+          type: string
+          description: Original filename
+        mimeType:
+          type: string
+          description: MIME type of the video
+        size:
+          type: integer
+          format: int64
+          description: File size in bytes
+        duration:
+          type: number
+          format: double
+          description: Video duration in seconds
+        width:
+          type: integer
+          format: int32
+          description: Video width in pixels
+        height:
+          type: integer
+          format: int32
+          description: Video height in pixels
+        frameRate:
+          type: number
+          format: double
+          description: Frame rate (fps)
+        uploadedAt:
+          type: string
+          format: date-time
+          description: Upload timestamp
+      description: Video file information
+    VideoUploadRequest:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: byte
+          description: Video file (multipart/form-data)
+      description: Video upload request
+    VideoUploadResponse:
+      type: object
+      required:
+        - video
+      properties:
+        video:
+          allOf:
+            - $ref: '#/components/schemas/VideoInfo'
+          description: Uploaded video information
+      description: Video upload response
+servers:
+  - url: http://localhost:3001
+    description: Development server
+    variables: {}

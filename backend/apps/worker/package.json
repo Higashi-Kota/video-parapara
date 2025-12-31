@@ -1,0 +1,29 @@
+{
+  "name": "@video-frame-extractor-backend/worker",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --ignore node_modules src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@video-frame-extractor-backend/database": "workspace:*",
+    "@video-frame-extractor-backend/storage": "workspace:*",
+    "@video-frame-extractor-backend/video": "workspace:*",
+    "@video-frame-extractor-backend/queue": "workspace:*",
+    "bullmq": "^5.66.0",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.45.1",
+    "postgres": "^3.4.7"
+  },
+  "devDependencies": {
+    "@internal/shared-config": "workspace:*",
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3"
+  }
+}

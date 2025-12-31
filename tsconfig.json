@@ -1,0 +1,16 @@
+{
+  "extends": "@internal/shared-config/tsconfig/base",
+  "compilerOptions": {
+    "incremental": false,
+    "composite": false,
+    "declarationMap": false
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./frontend/apps/web-app" },
+    { "path": "./frontend/packages/api-client" },
+    { "path": "./backend/apps/server" },
+    { "path": "./shared-config" }
+  ]
+}
