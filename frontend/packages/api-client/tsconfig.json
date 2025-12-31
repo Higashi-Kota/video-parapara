@@ -1,0 +1,14 @@
+{
+  "extends": "@internal/shared-config/tsconfig/frontend/lib",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "noEmit": false,
+    "strict": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

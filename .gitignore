@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Build output
+playwright-report
+test-results
+dist/
+*.tsbuildinfo
+!*.config.js
+coverage
+.playwright-mcp
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.localhost
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Cache
+.cache/
+
+*storybook.log
+storybook-static
+
+# Local development
+storage/
+*.zip
+
+# Test fixtures (large video files)
+fixtures/*.mp4
+fixtures/*.mov
+fixtures/*.avi
+fixtures/*.mkv
+fixtures/*.webm
+!fixtures/.gitkeep

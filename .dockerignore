@@ -1,0 +1,57 @@
+# Node modules
+**/node_modules
+**/.pnpm-store
+
+# Build outputs
+**/dist
+**/*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.localhost
+.env.production
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Testing
+**/coverage
+**/.nyc_output
+playwright-report/
+test-results/
+
+# Logs
+**/*.log
+**/logs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Development files
+docker-compose.override.yml
+storage/
+*.zip
+fixtures/
+
+# Claude
+.claude/
+CLAUDE.md

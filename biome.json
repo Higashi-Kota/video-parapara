@@ -1,0 +1,14 @@
+{
+  "extends": ["./shared-config/biome/biome.v2.json"],
+  "files": {
+    "includes": ["!**/generated"]
+  },
+  "overrides": [
+    {
+      "includes": ["**/generated/**"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
+}
