@@ -38,7 +38,6 @@ pnpm-debug.log*
 storybook-static
 
 # Local development
-storage/
 *.zip
 
 # Test fixtures (large video files)
