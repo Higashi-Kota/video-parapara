@@ -132,10 +132,54 @@ jobs:
           build-args: |
             VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || 'https://video-parapara-backend-api.onrender.com' }}
 
+  migrate-database:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: build-backend-api
+    steps:
+      - name: Check if DATABASE_URL is configured
+        id: check-db
+        run: |
+          if [ -n "$DATABASE_URL" ]; then
+            echo "configured=true" >> $GITHUB_OUTPUT
+          else
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "DATABASE_URL not configured, skipping migrations"
+          fi
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Checkout
+        if: steps.check-db.outputs.configured == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: steps.check-db.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        if: steps.check-db.outputs.configured == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        if: steps.check-db.outputs.configured == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Run migrations
+        if: steps.check-db.outputs.configured == 'true'
+        run: pnpm --filter @video-frame-extractor-backend/database db:push
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
   deploy-backend-api:
     name: Deploy Backend API to Render
     runs-on: ubuntu-latest
-    needs: build-backend-api
+    needs: [build-backend-api, migrate-database]
+    if: ${{ always() && needs.build-backend-api.result == 'success' }}
     steps:
       - name: Trigger Render deploy
         run: |
