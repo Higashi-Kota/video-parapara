@@ -11,6 +11,11 @@ export default defineConfig({
           index: "src/index.ts",
         },
         tsconfigPath: "./tsconfig.json",
+        // import.meta.env をビルド時に置換しないように設定
+        // Viteがアプリビルド時に正しく解決する
+        define: {
+          "import.meta.env.VITE_API_BASE_URL": "import.meta.env.VITE_API_BASE_URL",
+        },
       },
       format: "esm",
       syntax: "esnext",
