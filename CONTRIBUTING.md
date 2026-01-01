@@ -34,7 +34,7 @@ cp .env.example .env
 # Edit .env: Set LOCAL_STORAGE_PATH to absolute path
 
 # 3. Start infrastructure
-docker compose up -d postgres dragonfly
+docker compose up -d postgres redis
 
 # 4. Build packages and push schema
 pnpm build:prepare
@@ -50,7 +50,7 @@ curl http://localhost:3001/health
 
 ### Option 2: Local Development
 
-PostgreSQL/DragonflyDBはDockerで、アプリケーションはローカルで実行。
+PostgreSQL/RedisはDockerで、アプリケーションはローカルで実行。
 
 ```bash
 # 1. Install dependencies
@@ -61,7 +61,7 @@ cp .env.example .env
 # Edit .env: Set LOCAL_STORAGE_PATH to absolute path
 
 # 3. Start infrastructure only
-docker compose up -d postgres dragonfly
+docker compose up -d postgres redis
 
 # 4. Build packages and push schema
 pnpm build:prepare
@@ -219,7 +219,7 @@ docker build -f Dockerfile.worker.backend -t backend-worker:prod --target produc
 docker compose up -d
 
 # Start specific services
-docker compose up -d postgres dragonfly
+docker compose up -d postgres redis
 docker compose up -d backend-api backend-worker
 
 # View logs
@@ -249,15 +249,6 @@ cp .env.example .env
 ```bash
 docker compose up -d postgres
 docker compose exec postgres pg_isready -U postgres
-```
-
-### BullMQ Lua Script Error
-
-DragonflyDBとBullMQの互換性問題。`docker-compose.yml`に以下が必要:
-
-```yaml
-dragonfly:
-  command: dragonfly --default_lua_flags=allow-undeclared-keys
 ```
 
 ### FFmpeg Not Found

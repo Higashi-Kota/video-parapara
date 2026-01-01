@@ -18,7 +18,7 @@
 
 ## Phase 1: バックエンド動作確認 ✅ 完了
 
-- [x] Docker Compose起動 (PostgreSQL + DragonflyDB)
+- [x] Docker Compose起動 (PostgreSQL + Redis)
 - [x] DBスキーマ反映
 - [x] APIサーバー起動・動作確認
 - [x] ワーカー起動・ジョブ処理確認
@@ -98,7 +98,6 @@
 
 | 問題 | 修正 |
 |------|------|
-| DragonflyDB + BullMQ 互換性 | `--default_lua_flags=allow-undeclared-keys` |
 | ESM dotenv 読み込み順序 | `env.ts` に分離 |
 | ffmpeg-static バイナリ不在 | システム ffmpeg へフォールバック |
 | moduleResolution 不一致 | `NodeNext` に変更 |

@@ -8,7 +8,7 @@
 
 **Backend**: Node.js 24 / Express 5 / TypeScript 5.9 / Drizzle ORM / BullMQ / FFmpeg
 
-**Infrastructure**: PostgreSQL 16 / DragonflyDB (Redis互換) / Cloudflare R2 (本番) / Docker
+**Infrastructure**: PostgreSQL 16 / Redis / Cloudflare R2 (本番) / Docker
 
 ## Project Structure
 
@@ -49,7 +49,7 @@ pnpm install                # Install dependencies
 pnpm build:prepare          # Generate types + build packages
 
 # Development (Docker - Recommended)
-docker compose up -d postgres dragonfly  # Start infrastructure
+docker compose up -d postgres redis  # Start infrastructure
 pnpm db:push                             # Push schema
 docker compose up -d backend-api backend-worker  # Start backend
 
@@ -85,7 +85,7 @@ pnpm generate               # Generate API types from TypeSpec
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection | `postgres://user:pass@localhost:5432/video_extractor` |
-| `REDIS_URL` | Redis/DragonflyDB connection | `redis://localhost:6379` |
+| `REDIS_URL` | Redis connection | `redis://localhost:6379` |
 | `STORAGE_TYPE` | Storage backend | `local` or `r2` |
 | `LOCAL_STORAGE_PATH` | Local storage path (absolute) | `/path/to/storage` |
 
@@ -130,7 +130,6 @@ pnpm generate               # Generate API types from TypeSpec
 
 | Issue | Solution |
 |-------|----------|
-| DragonflyDB + BullMQ compatibility | `--default_lua_flags=allow-undeclared-keys` |
 | ESM dotenv load order | Use `env.ts` with top-level import |
 | ffmpeg-static binary missing | Falls back to system ffmpeg |
 | Relative storage path issues | Use absolute path for `LOCAL_STORAGE_PATH` |
