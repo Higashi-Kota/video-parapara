@@ -17,7 +17,7 @@
 | Frontend | React 19, Vite 7, TypeScript 5.9, Tailwind CSS 4 |
 | Backend | Node.js 24, Express 5, TypeScript 5.9, FFmpeg |
 | Database | PostgreSQL 16, Drizzle ORM |
-| Queue | BullMQ, DragonflyDB (Redis互換) |
+| Queue | BullMQ, Redis |
 | Storage | Local / Cloudflare R2 |
 
 ## Quick Start (Docker)
@@ -33,7 +33,7 @@ cp .env.example .env
 # Edit .env: Set LOCAL_STORAGE_PATH to absolute path
 
 # 3. Start infrastructure
-docker compose up -d postgres dragonfly
+docker compose up -d postgres redis
 
 # 4. Build and push schema
 pnpm build:prepare
@@ -104,7 +104,7 @@ See `.env.example` for all variables. Key variables:
 | Variable | Description |
 |----------|-------------|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `REDIS_URL` | Redis/DragonflyDB connection |
+| `REDIS_URL` | Redis connection |
 | `STORAGE_TYPE` | `local` or `r2` |
 | `LOCAL_STORAGE_PATH` | Absolute path for local storage |
 
